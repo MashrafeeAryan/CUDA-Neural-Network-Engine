@@ -1,9 +1,12 @@
+//Preprocessor directive to esnure header file is included only once during compiling
+#pragma once
+
 #include <vector>
 class Matrix{
     // We use private variables for data hiding or encapsulation
     // Private vairbales help you set rules to change your variables
         //Example:
-            //If deposit value is less than 0, it is not valid
+            //If deposit value is less t han 0, it is not valid
             // So, set a rule that says deposit should not be less than 0
     private:
         // declare rows and columsn value.
@@ -29,9 +32,7 @@ class Matrix{
         // Instead of creating rows and cols first, then assign r and c into them,
         // create rows with r and c immediately
         // Initialized data vector with 0.0
-        Matrix(int r, int c)
-            :rows(r), cols(c), data(r * c, 0.0){
-        }
+        Matrix(int r, int c);     
 
         // So this is how our vector will look like
         // Matrix(2,3) = [0,0,0,0,0,0]
@@ -44,8 +45,8 @@ class Matrix{
             // index = element_searching_row * number of columns + element_searching_column
             // index = 1 * 3 + 2 = 5
 
-        double& operator()(int r, int c){
-            return data[ r * cols + c];
-        }
+        //& is used as a reference operator
+        //double& gives direct access to memory slot that stores the retuned element        
+        double& operator()(int r, int c);
 
 };
