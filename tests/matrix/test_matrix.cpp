@@ -1,14 +1,14 @@
 #include "neural_engine/matrix/Matrix.hpp"
-
+#include <stdexcpt>
 #include <gtest/gtest.h>
 
 //Using the equal function of google test we can see if it fills with zeroes without actually seeing the matrix
 TEST(MatrixTest, ConstructorCreatesZeroFilledMatrix) {
     //Matrix Object created with 2 rows and 3 columns
     Matrix A(2,3); //Whenver it is created, it should be filled with zeroes
-    EXPECT_DOUBLE_EQ(A(0,0),0.0)
-    EXPECT_DOUBLE_EQ(A(1,2),0.0)
-    EXPECT_DOUBLE_EQ(A(1,3),0.0)
+    EXPECT_DOUBLE_EQ(A(0,0),0.0);
+    EXPECT_DOUBLE_EQ(A(1,2),0.0);
+    EXPECT_DOUBLE_EQ(A(1,2),0.0);
 
     
 }
@@ -18,7 +18,7 @@ TEST(MatrixTest, CanStoreAndReadValues) {
     Matrix A(2,3);
 
     // This allows to access the index
-    // Doing this will take to row 1, column 1
+    // Doing this will take to first row 1, first column 1
     A(0,0) = 5.0;
     A(1,2) = 10.0;
 
