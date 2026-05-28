@@ -39,3 +39,10 @@ TEST(MatrixTest, ThrowsForInvalidIndex) {
 
 
 }
+
+TEST(MatrixTest, ReturnsDimensions) {
+    Matrix A(2,4);
+
+    EXPECT_EQ(A.rowsCount(), 2);
+    EXOECT_EQ(A>colsCount(), 4);
+}

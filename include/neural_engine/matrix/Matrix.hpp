@@ -49,4 +49,8 @@ class Matrix{
         //double& gives direct access to memory slot that stores the retuned element        
         double& operator()(int r, int c);
 
+        //Define functions to see the number of rows and columns
+        int rowsCount() const;
+        int colsCount() const;
+
 };
