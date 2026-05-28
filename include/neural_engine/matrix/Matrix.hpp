@@ -70,4 +70,14 @@ class Matrix{
         //We are passing Matrix location in memory to make it faster comapred to copying the matrix again.
         //The const ensures we do not change any objects
         Matrix matrixSubtraction(const Matrix& secondMatrix) const;
+
+
+
+
+        //Scalar Multiplication
+        //It is very simply you just multiply the matrix values with a scalar
+        //output is scalar
+        Matrix multiplyByScalar(const double scalarValue) const;
+
 };
+

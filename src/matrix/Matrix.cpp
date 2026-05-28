@@ -107,3 +107,15 @@ Matrix Matrix::matrixSubtraction(const Matrix& secondMatrix) const{
     }
     return results;
 }
+
+//Define MultiplyByScalar function
+Matrix Matrix::multiplyByScalar(const double scalarValue) const{
+    //No need for error messages because we are using only one matrix here
+    Matrix results(rows, cols);
+    for (int r = 0; r < rows; r++){
+        for (int c = 0; c< cols; c++){
+            results(r, c) = (*this)(r,c) * scalarValue;
+        }
+    }
+    return results;
+}
