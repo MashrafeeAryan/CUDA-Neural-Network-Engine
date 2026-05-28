@@ -84,5 +84,9 @@ class Matrix{
         //Matrix Multiplication
         //We are multiplying two matrix and need to make sure both are const
         Matrix matrixMultiplication(const Matrix& secondMatrix) const;
+
+        //Transpose function
+        //Flips rows and columns
+        Matrix transpose() const;
 };
 

@@ -147,3 +147,18 @@ Matrix Matrix::matrixMultiplication(const Matrix& secondMatrix) const {
     return result;
 
 }
+
+//Define tranpose function
+Matrix Matrix::transpose() const {
+    //The goal is to flips rows and columns of the matrices
+    // A(r,c) = results(c,r)
+    //Define results matrix
+    Matrix results(cols, rows);
+
+    for (int r=0; r < rows; r++){
+        for (int c=0; c< cols; c++){
+            results(c, r) = (*this)(r,c);
+        }
+    }
+    return results;
+}
