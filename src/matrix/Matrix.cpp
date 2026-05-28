@@ -90,3 +90,20 @@ Matrix Matrix::matrixAddition(const Matrix& secondMatrix) const {
 
     return results;
 }
+
+
+//Define MatrixSubtraction
+//It is pretty similar to matrix addition
+Matrix Matrix::matrixSubtraction(const Matrix& secondMatrix) const{
+    if (rows != secondMatrix.rowsCount() || cols != secondMatrix.colsCount()){
+        throw std::invalid_argument("Matrix dimensions must match for subtraction");
+    };
+    //defines an empty matrix with rows and columns
+    Matrix results(rows, cols);
+    for (int r =0; r < rows; r++){
+        for (int c=0; c< cols; c++){
+            results(r, c) = (*this)(r,c) - secondMatrix(r, c);
+        }
+    }
+    return results;
+}

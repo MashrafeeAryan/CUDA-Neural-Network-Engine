@@ -51,7 +51,7 @@ class Matrix{
 
         //Read only version of operator
         double operator()(int r, int c) const;
-        
+
         //Define functions to see the number of rows and columns
         int rowsCount() const;
         int colsCount() const;
@@ -59,4 +59,15 @@ class Matrix{
         //Matrix addition
         //We add const so it does not modify the object even accidentally
         Matrix matrixAddition(const Matrix& parameterMatrix) const;
+
+
+
+
+        //Matrix Subtraction follows the same idea as matrix addition
+        //We declare matrix subtration here
+        //We have both read and write operators in place
+        //Matrix is the return type
+        //We are passing Matrix location in memory to make it faster comapred to copying the matrix again.
+        //The const ensures we do not change any objects
+        Matrix matrixSubtraction(const Matrix& secondMatrix) const;
 };
