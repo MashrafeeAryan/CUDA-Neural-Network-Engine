@@ -21,6 +21,9 @@ add_executable(matrix_tests
     matrix/test_matrix.cpp
 )
 
+add_executable(dense_test
+    layers/test_dense.cpp
+)
 target_link_libraries(matrix_tests
     PRIVATE
         matrix
