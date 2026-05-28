@@ -1,5 +1,5 @@
 #include "neural_engine/matrix/Matrix.hpp"
-#include <stdexcpt>
+#include <stdexcept>
 #include <gtest/gtest.h>
 
 //Using the equal function of google test we can see if it fills with zeroes without actually seeing the matrix
@@ -8,7 +8,7 @@ TEST(MatrixTest, ConstructorCreatesZeroFilledMatrix) {
     Matrix A(2,3); //Whenver it is created, it should be filled with zeroes
     EXPECT_DOUBLE_EQ(A(0,0),0.0);
     EXPECT_DOUBLE_EQ(A(1,2),0.0);
-    EXPECT_DOUBLE_EQ(A(1,2),0.0);
+    EXPECT_DOUBLE_EQ(A(0,2),0.0);
 
     
 }
