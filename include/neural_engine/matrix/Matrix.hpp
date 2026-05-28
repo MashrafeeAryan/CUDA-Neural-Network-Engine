@@ -88,5 +88,13 @@ class Matrix{
         //Transpose function
         //Flips rows and columns
         Matrix transpose() const;
+
+        //Matrix Randomization
+        //Every element cannot start form 0 or matrix won't kearn anything becuase it learns the same thing
+        //Static says that the function actually belong to a matrix class but it does not belong to a specifc matrix object
+        //When you are callign it, it means that you are initializing matrix with random values
+        static Matrix matrixRandomization(int rows, int cols, double minValue, double maxValue);
+
+
 };
 

@@ -1,5 +1,5 @@
 #include "neural_engine/matrix/Matrix.hpp"
-
+#include <random>
 #include <stdexcept>
 
 // Constructor: function inside class that runs automatically 
@@ -161,4 +161,31 @@ Matrix Matrix::transpose() const {
         }
     }
     return results;
+}
+
+//Define matrixRandomization
+Matrix Matrix::matrixRandomization(int rows, int cols, double minValue, double maxValue){
+    if (minValue > maxValue) {
+        throw std::invalid_argument("minValue cannot be greater than maxValue");
+    }
+
+    Matrix results(rows, cols);
+
+    //Gets random seed from computer
+    std::random_device rd;
+
+    //Uses the random seed to generate many random numbers
+    //mt19937 is random number eingien in C++
+    std::mt19937 generator(rd());
+
+    //It uses the generator to produce random values between minValue and maxValue
+    std::uniform_real_distribution<double> distribution(minValue, maxValue);
+
+    for (int r=0; r< rows; r++){
+        for (int c=0; c<cols; c++){
+            results(r, c) = distribution(generator);
+        }
+    }
+    return results;
+ 
 }
