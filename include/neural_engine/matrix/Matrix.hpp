@@ -79,5 +79,10 @@ class Matrix{
         //output is scalar
         Matrix multiplyByScalar(const double scalarValue) const;
 
+
+        //Hard Stuff
+        //Matrix Multiplication
+        //We are multiplying two matrix and need to make sure both are const
+        Matrix matrixMultiplication(const Matrix& secondMatrix) const;
 };
 

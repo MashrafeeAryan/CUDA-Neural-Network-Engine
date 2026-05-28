@@ -119,3 +119,31 @@ Matrix Matrix::multiplyByScalar(const double scalarValue) const{
     }
     return results;
 }
+
+//Define Matrix Multiplication
+Matrix Matrix::matrixMultiplication(const Matrix& secondMatrix) const {
+    //Set the condition for matrix multiplicaiton where columns of first matrix must equal rows of second matrix
+    if (cols != secondMatrix.rowsCount()){
+        throw std::invalid_argument("Matrix dimensions must match for multiplication. Number of columsn of first amtrix should equal number of rows of second matrix");
+    }
+
+    //The resulting matrix shape should be rows of first matrix * columns of second matrix
+    Matrix result(rows, secondMatrix.colsCount());
+
+    // rows is for first matrix
+    //The first two loops actually help us figure out which spot in the new result box should this go
+    for (int r = 0; r < rows; r++){
+        for (int c = 0; c< secondMatrix.colsCount(); c++){
+            double sum = 0;
+            for (int k =0; k < cols; k++){
+                //For the first matrix, the rows will be same column number will move
+                //For second matrix, row will move and column number will be same
+                sum += (*this)(r,k) * secondMatrix(k,c);
+            }
+            result(r, c) = sum;
+        }
+
+    }
+    return result;
+
+}
