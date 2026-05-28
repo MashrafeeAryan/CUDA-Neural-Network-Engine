@@ -30,9 +30,63 @@ Matrix::Matrix(int r, int c)
 
 //& is used as a reference operator
 //double& gives direct access to memory slot that stores the retuned element        
+
+// This is used for write/edit version
 double& Matrix::operator()(int r, int c){
     if (r < 0 || r >= rows || c < 0 || c >= cols) {
         throw std::out_of_range("Matrix index out of range");   
     }
     return data[ r * cols + c];
+}
+
+//Read only version of operator
+double Matrix::operator()(int r, int c) const{
+    if (r < 0 || r >= rows || c < 0 || c >= cols) {
+        throw std::out_of_range("Matrix index out of range");   
+    }
+    return data[ r * cols + c];
+}
+//Returns the number of rows a matrix has
+int Matrix::rowsCount() const{
+    return rows;
+}
+
+//return the number of columns a matrix has
+int Matrix::colsCount() const{
+    return cols;
+}
+
+//Define Matrix Addition
+//It is usually called :
+// Matrix A(2, 2);
+// Matrix B(2, 2);
+// A(0, 0) = 1;
+// A(0, 1) = 2;
+// A(1, 0) = 3;
+// A(1, 1) = 4;
+
+// B(0, 0) = 5;
+// B(0, 1) = 6;
+// B(1, 0) = 7;
+// B(1, 1) = 8;
+// A.matrixAddition(B)
+//For addition the rows and columsn should be exact of both matrixs
+Matrix Matrix::matrixAddition(const Matrix& secondMatrix) const {
+    //Since the matrixAddition is part of current class, we can access provoate values like rows
+    //without using getter function.
+    //It simply means: (this)(rows)
+    if (rows != secondMatrix.rowsCount() || cols!= secondMatrix.colsCount()){
+        throw std::invalid_argument("Matrix dimensions must match for addition");    }
+    //Create an empty matrix filled with zeroes
+    Matrix results(rows, cols); 
+    
+    // This loop access each row and column
+    // (*this) allows to access the current object
+    for (int r=0; r< rows; r++){
+        for (int c=0; c< cols; c++){
+            results(r, c) = (*this)(r,c) + secondMatrix(r, c);
+        }
+    }
+
+    return results;
 }
