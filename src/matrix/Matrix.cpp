@@ -189,3 +189,16 @@ Matrix Matrix::matrixRandomization(int rows, int cols, double minValue, double m
     return results;
  
 }
+
+//Bias brocasting where you add the bias to every row
+Matrix Matrix::addRowVector(const Matrix& biasVector) const{
+
+    //It will be used like A.addRowVector(bias)
+    //so we have access to the rows and columns of Matrix A
+    Matrix result(rows, cols);
+    for (int r = 0; r < rows; r++){
+        for (int c = 0; c < cols; c++){
+            result(r, c) = (*this)(r, c) + biasVector(0, c);
+        }
+    }
+}

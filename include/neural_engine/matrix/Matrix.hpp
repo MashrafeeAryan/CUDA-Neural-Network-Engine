@@ -95,6 +95,7 @@ class Matrix{
         //When you are callign it, it means that you are initializing matrix with random values
         static Matrix matrixRandomization(int rows, int cols, double minValue, double maxValue);
 
-
+        //For bias broadcasting where we add bias to every row 
+        Matrix addRowVector(const Matrix& biasVector) const;
 };
 
