@@ -153,3 +153,53 @@ TEST(MatrixTest, MultiplicationThrowsForInvalidDimensions) {
 
     EXPECT_THROW(A.matrixMultiplication(B), std::invalid_argument);
 }
+
+TEST(MatrixTest, CanTransposeMatrix) {
+    Matrix A(2, 3);
+
+    A(0, 0) = 1;
+    A(0, 1) = 2;
+    A(0, 2) = 3;
+
+    A(1, 0) = 4;
+    A(1, 1) = 5;
+    A(1, 2) = 6;
+
+    Matrix T = A.transpose();
+
+    EXPECT_EQ(T.rowsCount(), 3);
+    EXPECT_EQ(T.colsCount(), 2);
+
+    EXPECT_DOUBLE_EQ(T(0, 0), 1);
+    EXPECT_DOUBLE_EQ(T(0, 1), 4);
+
+    EXPECT_DOUBLE_EQ(T(1, 0), 2);
+    EXPECT_DOUBLE_EQ(T(1, 1), 5);
+
+    EXPECT_DOUBLE_EQ(T(2, 0), 3);
+    EXPECT_DOUBLE_EQ(T(2, 1), 6);
+}
+
+TEST(MatrixTest, RandomizationCreatesCorrectShape) {
+    Matrix A = Matrix::matrixRandomization(3, 4, -0.1, 0.1);
+
+    EXPECT_EQ(A.rowsCount(), 3);
+    EXPECT_EQ(A.colsCount(), 4);
+}
+TEST(MatrixTest, RandomizationValuesAreWithinRange) {
+    Matrix A = Matrix::matrixRandomization(3, 4, -0.1, 0.1);
+
+    for (int r = 0; r < A.rowsCount(); r++) {
+        for (int c = 0; c < A.colsCount(); c++) {
+            EXPECT_GE(A(r, c), -0.1);
+            EXPECT_LE(A(r, c), 0.1);
+        }
+    }
+}
+
+TEST(MatrixTest, RandomizationThrowsForInvalidRange) {
+    EXPECT_THROW(
+        Matrix::matrixRandomization(2, 3, 1.0, -1.0),
+        std::invalid_argument
+    );
+}

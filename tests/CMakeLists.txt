@@ -21,7 +21,7 @@ add_executable(matrix_tests
     matrix/test_matrix.cpp
 )
 
-add_executable(dense_test
+add_executable(dense_tests
     layers/test_dense.cpp
 )
 target_link_libraries(matrix_tests
@@ -30,7 +30,14 @@ target_link_libraries(matrix_tests
         GTest::gtest_main
 )
 
+target_link_libraries(dense_tests
+    PRIVATE
+        matrix
+        layers
+        GTest::gtest_main
+)
 
 # Registers the GoogleTest tests with CTest
 include(GoogleTest)
 gtest_discover_tests(matrix_tests)
+gtest_discover_tests(dense_tests)
