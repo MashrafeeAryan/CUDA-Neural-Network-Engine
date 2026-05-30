@@ -13,6 +13,7 @@ enable_testing()
 
 add_subdirectory(src/matrix)
 add_subdirectory(src/layers)
+add_subdirectory(src/activations)
 add_subdirectory(apps)
 
 add_subdirectory(tests)
