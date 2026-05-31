@@ -37,7 +37,7 @@ activations/test_softmax.cpp)
 
 
 add_executable(mse_loss_tests
-loss/mse_loss_tests.cpp)
+loss/test_mse_loss.cpp)
 
 target_link_libraries(matrix_tests
     PRIVATE
