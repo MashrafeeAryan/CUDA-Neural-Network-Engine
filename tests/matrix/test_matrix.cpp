@@ -203,3 +203,34 @@ TEST(MatrixTest, RandomizationThrowsForInvalidRange) {
         std::invalid_argument
     );
 }
+
+TEST(MatrixTest, CanAddRowVectorToEveryRow) {
+    Matrix A(3, 2);
+
+    A(0, 0) = 1.0;
+    A(0, 1) = 2.0;
+    A(1, 0) = 3.0;
+    A(1, 1) = 4.0;
+    A(2, 0) = 5.0;
+    A(2, 1) = 6.0;
+
+    Matrix bias(1, 2);
+    bias(0, 0) = 10.0;
+    bias(0, 1) = 20.0;
+
+    Matrix result = A.addRowVector(bias);
+
+    EXPECT_EQ(result(0, 0), 11.0);
+    EXPECT_EQ(result(0, 1), 22.0);
+    EXPECT_EQ(result(1, 0), 13.0);
+    EXPECT_EQ(result(1, 1), 24.0);
+    EXPECT_EQ(result(2, 0), 15.0);
+    EXPECT_EQ(result(2, 1), 26.0);
+}
+
+TEST(MatrixTest, AddRowVectorThrowsForWrongShape) {
+    Matrix A(3, 2);
+    Matrix wrongBias(2, 2);
+
+    EXPECT_THROW(A.addRowVector(wrongBias), std::invalid_argument);
+}

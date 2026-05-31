@@ -13,7 +13,7 @@ Matrix Dense::forward(const Matrix& input) const{
     //Use the input matrix and mutliply with weihgts matrix
     // Then add the bias to the output matrix
     Matrix output = input.matrixMultiplication(weights);
-    output = output.matrixAddition(bias);
+    output = output.addRowVector(bias);
 
     return output;
 }

@@ -1,5 +1,6 @@
 add_library(activations
     ReLU.cpp
+    Sigmoid.cpp
 )
 
 target_include_directories(activations

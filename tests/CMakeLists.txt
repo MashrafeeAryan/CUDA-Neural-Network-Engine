@@ -28,6 +28,9 @@ add_executable(relu_tests
     activations/test_relu.cpp
 )
 
+add_executable(sigmoid_tests
+activations/test_sigmoid.cpp
+)
 target_link_libraries(matrix_tests
     PRIVATE
         matrix
@@ -42,6 +45,14 @@ target_link_libraries(dense_tests
 )
 
 target_link_libraries(relu_tests
+    PRIVATE
+        matrix
+        activations
+
+        GTest::gtest_main
+)
+
+target_link_libraries(sigmoid_tests
     PRIVATE
         matrix
         activations

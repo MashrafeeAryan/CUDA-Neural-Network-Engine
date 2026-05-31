@@ -24,3 +24,14 @@ TEST(DenseTest, ForwardThrowsForWrongInputSize) {
 
     EXPECT_THROW(layer.forward(input), std::invalid_argument);
 }
+
+TEST(DenseTest, ForwardSupportsBatchInput) {
+    Dense layer(3, 2);
+
+    Matrix input(4, 3);
+
+    Matrix output = layer.forward(input);
+
+    EXPECT_EQ(output.rowsCount(), 4);
+    EXPECT_EQ(output.colsCount(), 2);
+}
