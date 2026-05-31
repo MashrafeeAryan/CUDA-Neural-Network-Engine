@@ -35,6 +35,10 @@ activations/test_sigmoid.cpp
 add_executable(softmax_tests
 activations/test_softmax.cpp)
 
+
+add_executable(mse_loss_tests
+loss/mse_loss_tests.cpp)
+
 target_link_libraries(matrix_tests
     PRIVATE
         matrix
@@ -71,6 +75,14 @@ target_link_libraries(softmax_tests
 
         GTest::gtest_main
 )
+
+target_link_libraries(mse_loss_tests
+    PRIVATE
+        matrix
+        loss
+
+        GTest::gtest_main
+)
 # Registers the GoogleTest tests with CTest
 include(GoogleTest)
 gtest_discover_tests(matrix_tests)
@@ -78,3 +90,4 @@ gtest_discover_tests(dense_tests)
 gtest_discover_tests(relu_tests)
 gtest_discover_tests(sigmoid_tests)
 gtest_discover_tests(softmax_tests)
+gtest_discover_tests(mse_loss_tests)
