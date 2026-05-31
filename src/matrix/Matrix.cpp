@@ -190,8 +190,16 @@ Matrix Matrix::matrixRandomization(int rows, int cols, double minValue, double m
  
 }
 
-//Bias brocasting where you add the bias to every row
+//Bias broadcasting where you add the bias to every row
 Matrix Matrix::addRowVector(const Matrix& biasVector) const{
+
+    //There should be an error if A column and bias column doesn't match
+    //And the bias must have 1 row.
+    if (cols != biasVector.colsCount() || biasVector.rowsCount() != 1){
+        throw std::invalid_argument(
+            "Bias vector must have shape 1 x number_of_columns"
+        );
+    }
 
     //It will be used like A.addRowVector(bias)
     //so we have access to the rows and columns of Matrix A
@@ -199,6 +207,7 @@ Matrix Matrix::addRowVector(const Matrix& biasVector) const{
     for (int r = 0; r < rows; r++){
         for (int c = 0; c < cols; c++){
             result(r, c) = (*this)(r, c) + biasVector(0, c);
-        }
+        } 
     }
+    return result;
 }
