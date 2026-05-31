@@ -31,6 +31,10 @@ add_executable(relu_tests
 add_executable(sigmoid_tests
 activations/test_sigmoid.cpp
 )
+
+add_executable(softmax_tests
+activations/test_softmax.cpp)
+
 target_link_libraries(matrix_tests
     PRIVATE
         matrix
@@ -59,8 +63,18 @@ target_link_libraries(sigmoid_tests
 
         GTest::gtest_main
 )
+
+target_link_libraries(softmax_tests
+    PRIVATE
+        matrix
+        activations
+
+        GTest::gtest_main
+)
 # Registers the GoogleTest tests with CTest
 include(GoogleTest)
 gtest_discover_tests(matrix_tests)
 gtest_discover_tests(dense_tests)
 gtest_discover_tests(relu_tests)
+gtest_discover_tests(sigmoid_tests)
+gtest_discover_tests(softmax_tests)

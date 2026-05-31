@@ -1,6 +1,7 @@
 add_library(activations
     ReLU.cpp
     Sigmoid.cpp
+    Softmax.cpp
 )
 
 target_include_directories(activations
