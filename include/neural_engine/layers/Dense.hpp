@@ -1,42 +1,37 @@
 /*
-Dense Layer takes input matrix, mutliplies it by a weights amtrix, adds a bias, and produces outut
-output = input * weights + bias
-*/
-//Preprocessor directive to esnure header file is included only once during compiling
+ * Dense layer for a feedforward neural network.
+ *
+ * Forward:  output = input * weights + bias
+ * Backward: computes gradients for weights, bias, and input.
+ */
+
 #pragma once
- 
-//Since we are using matrix object, we need:
+
 #include "neural_engine/matrix/Matrix.hpp"
 
-#include <vector>
-class Dense{
-    private:
-    //how many features each input has
+class Dense {
+private:
     int weightInputSize;
-    //how many neuirons/outputs this layer of ours are creating
     int weightOutputSize;
-    
+
     Matrix weights;
     Matrix bias;
 
-    // Saves the input for backward pass
+    // Cached from forward() because backward() needs it for dW = input^T * outputGradient.
     Matrix inputCache;
+
     Matrix weightGradients;
     Matrix biasGradients;
-    public:
-    //Constructor creates a layer with the input and output size
+
+public:
     Dense(int weightInputSize, int weightOutputSize);
 
-    //Forward function is responsible to pass the data through the layer
-    //It takes the input matrix, multiply it with the layer's weights, add bias
-    //then return the output
     Matrix forward(const Matrix& input);
-
-    //Dense backward function uses the ouitput gradietn to find, weights and bias gradient to change weights and bias
     Matrix backward(const Matrix& outputGradient);
 
     Matrix getWeightGradients() const;
     Matrix getBiasGradients() const;
-    Matrix getInputGradient() const;
 
+    // Applies one SGD update step using gradients from backward().
+    void updateParameters(double learningRate);
 };

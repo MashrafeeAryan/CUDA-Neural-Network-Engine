@@ -1,79 +1,91 @@
 #include "neural_engine/layers/Dense.hpp"
-#include <random>
+
 #include <stdexcept>
 
+Dense::Dense(int weightInputSize, int weightOutputSize)
+    : weightInputSize(weightInputSize),
+      weightOutputSize(weightOutputSize),
+      weights(Matrix::matrixRandomization(weightInputSize, weightOutputSize, -0.1, 0.1)),
+      inputCache(1, weightInputSize),
+      weightGradients(weightInputSize, weightOutputSize),
+      biasGradients(1, weightOutputSize),
+      bias(1, weightOutputSize) {
+}
 
-//Since input is a matrix object and colsCount() is a public function of the  matrix class we can call any function on th einput object
-Matrix Dense::forward(const Matrix& input){
-    //inputSize means number of columns the input matrix must have
-    if (input.colsCount() != weightInputSize){
-        throw std::invalid_argument("Matrix dimensions must match for multiplication. Number of columsn of first amtrix should equal number of rows of second matrix");
+Matrix Dense::forward(const Matrix& input) {
+    if (input.colsCount() != weightInputSize) {
+        throw std::invalid_argument(
+            "Input columns must match Dense layer input size"
+        );
     }
-    //Save the input in input cache for backward pass
+
+    // Cache the input because Dense backward needs it for:
+    // dW = input^T * outputGradient
     inputCache = input;
 
-    //Use the input matrix and mutliply with weihgts matrix
-    // Then add the bias to the output matrix
+    // Dense forward pass:
+    // output = input * weights + bias
     Matrix output = input.matrixMultiplication(weights);
     output = output.addRowVector(bias);
-
 
     return output;
 }
 
-// Constructor with member's intialization
-//Constructor makes oject ready to use immedietly.
-//The variables you are passing to a class should do something 
-//And cosntrutor helps does that as soon as you create an object of that class
-Dense::Dense(int weightInputSize, int weightOutputSize):
-    weightInputSize(weightInputSize),
-    weightOutputSize(weightOutputSize),
-    //Set the weights variable to have a matrix of random variables
-    weights(Matrix::matrixRandomization(weightInputSize, weightOutputSize, -0.1, 0.1)),
-    inputCache(1, weightInputSize),
-    weightGradients(weightInputSize, weightOutputSize),
-    biasGradients(1, weightOutputSize),
-    
-    //Set the bias
-    //Bias is 1 row and weightOutputSiz columns
-    bias(1, weightOutputSize){
-
-    }
-
-Matrix Dense::backward(const Matrix& outputGradient){
-    // Formulas
-    // weightGradients = inputCacheᵀ × outputGradient
-    // biasGradients   = sum outputGradient down each column
-    // inputGradient   = outputGradient × weightsᵀ  
-    //T means transpose allows us to multiply
-    if (outputGradient.rowsCount() != inputCache.rowsCount() || outputGradient.colsCount() != weightOutputSize){
+Matrix Dense::backward(const Matrix& outputGradient) {
+    // outputGradient must match the Dense output shape:
+    // batchSize x weightOutputSize
+    if (outputGradient.rowsCount() != inputCache.rowsCount() ||
+        outputGradient.colsCount() != weightOutputSize) {
         throw std::invalid_argument(
-            "Output gradeitn shape does not match Dense output shape"
+            "Output gradient shape does not match Dense output shape"
         );
     }
-    Matrix transposedInputCache = inputCache.transpose();
-    weightGradients = transposedInputCache.matrixMultiplication(outputGradient);
 
-    //rest biasGradients to -
+    // Weight gradients:
+    // dW = input^T * outputGradient
+    weightGradients =
+        inputCache.transpose().matrixMultiplication(outputGradient);
+
+    // Bias is shared across the batch, so its gradient is the
+    // column-wise sum of output gradients.
     biasGradients = Matrix(1, outputGradient.colsCount());
-    
-    //Find bias gradient
-    for (int r =0; r < outputGradient.rowsCount(); r++){
-        for (int c =0; c< outputGradient.colsCount(); c++){
-            biasGradients(0, c) += outputGradient(r,c);
+
+    for (int r = 0; r < outputGradient.rowsCount(); r++) {
+        for (int c = 0; c < outputGradient.colsCount(); c++) {
+            biasGradients(0, c) += outputGradient(r, c);
         }
     }
 
-    Matrix transposedWeights = weights.transpose();
-    Matrix inputGradients = outputGradient.matrixMultiplication(transposedWeights);
+    // Input gradient is passed to the previous layer:
+    // dInput = outputGradient * weights^T
+    Matrix inputGradient =
+        outputGradient.matrixMultiplication(weights.transpose());
 
-    return inputGradients;
+    return inputGradient;
 }
 
-Matrix Dense::getWeightGradients() const{
+Matrix Dense::getWeightGradients() const {
     return weightGradients;
 }
 
 Matrix Dense::getBiasGradients() const {
     return biasGradients;
+}
+
+void Dense::updateParameters(double learningRate) {
+    // Apply one SGD update step using gradients computed during backward().
+    // parameter = parameter - learningRate * gradient
+    for (int r = 0; r < weights.rowsCount(); r++) {
+        for (int c = 0; c < weights.colsCount(); c++) {
+            weights(r, c) =
+                weights(r, c) - learningRate * weightGradients(r, c);
+        }
+    }
+
+    for (int r = 0; r < bias.rowsCount(); r++) {
+        for (int c = 0; c < bias.colsCount(); c++) {
+            bias(r, c) =
+                bias(r, c) - learningRate * biasGradients(r, c);
+        }
+    }
 }

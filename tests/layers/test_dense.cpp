@@ -36,7 +36,6 @@ TEST(DenseTest, ForwardSupportsBatchInput) {
     EXPECT_EQ(output.colsCount(), 2);
 }
 
-
 TEST(DenseTest, BackwardReturnsInputGradientWithCorrectShape) {
     Dense layer(3, 2);
 
@@ -86,8 +85,8 @@ TEST(DenseTest, BackwardCalculatesBiasGradients) {
 
     Matrix biasGradients = layer.getBiasGradients();
 
-    EXPECT_NEAR(biasGradients(0, 0), 4.0, 1e-6); // 1 + 3
-    EXPECT_NEAR(biasGradients(0, 1), 6.0, 1e-6); // 2 + 4
+    EXPECT_NEAR(biasGradients(0, 0), 4.0, 1e-6);
+    EXPECT_NEAR(biasGradients(0, 1), 6.0, 1e-6);
 }
 
 TEST(DenseTest, BackwardThrowsForWrongOutputGradientShape) {
@@ -99,4 +98,56 @@ TEST(DenseTest, BackwardThrowsForWrongOutputGradientShape) {
     Matrix wrongOutputGradient(4, 3);
 
     EXPECT_THROW(layer.backward(wrongOutputGradient), std::invalid_argument);
+}
+
+TEST(DenseTest, UpdateParametersAppliesGradientStep) {
+    Dense layer(3, 2);
+
+    Matrix input(1, 3);
+    input(0, 0) = 1.0;
+    input(0, 1) = 0.0;
+    input(0, 2) = 0.0;
+
+    Matrix outputBefore = layer.forward(input);
+
+    Matrix outputGradient(1, 2);
+    outputGradient(0, 0) = 1.0;
+    outputGradient(0, 1) = 0.0;
+
+    layer.backward(outputGradient);
+
+    double learningRate = 0.1;
+    layer.updateParameters(learningRate);
+
+    Matrix outputAfter = layer.forward(input);
+
+    // This setup gives weightGradient(0, 0) = 1 and biasGradient(0, 0) = 1.
+    // With learningRate = 0.1, both updates reduce output column 0 by 0.1.
+    EXPECT_NEAR(outputAfter(0, 0), outputBefore(0, 0) - 0.2, 1e-6);
+
+    // Output column 1 receives zero gradient, so it should not change.
+    EXPECT_NEAR(outputAfter(0, 1), outputBefore(0, 1), 1e-6);
+}
+
+TEST(DenseTest, UpdateParametersWithZeroLearningRateDoesNotChangeOutput) {
+    Dense layer(3, 2);
+
+    Matrix input(1, 3);
+    input(0, 0) = 1.0;
+    input(0, 1) = 2.0;
+    input(0, 2) = 3.0;
+
+    Matrix outputBefore = layer.forward(input);
+
+    Matrix outputGradient(1, 2);
+    outputGradient(0, 0) = 1.0;
+    outputGradient(0, 1) = 1.0;
+
+    layer.backward(outputGradient);
+    layer.updateParameters(0.0);
+
+    Matrix outputAfter = layer.forward(input);
+
+    EXPECT_NEAR(outputAfter(0, 0), outputBefore(0, 0), 1e-6);
+    EXPECT_NEAR(outputAfter(0, 1), outputBefore(0, 1), 1e-6);
 }
