@@ -1,5 +1,12 @@
 #include "neural_engine/activations/ReLU.hpp"
 #include <stdexcept>
+
+
+ReLU::ReLU()
+    : inputCache(1,1){}
+
+
+
 Matrix ReLU::forward(const Matrix& inputMatrix)  {
     // Create a result matrix with same shape as inputMatrix
     Matrix result(inputMatrix.rowsCount(), inputMatrix.colsCount());

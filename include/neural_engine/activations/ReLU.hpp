@@ -7,6 +7,7 @@ class ReLU {
     Matrix inputCache;
 
     public:
+    ReLU();
     Matrix forward(const Matrix& inputMatrix);
     Matrix backward(const Matrix& outputGradient);
 };
