@@ -46,7 +46,7 @@ Matrix Dense::backward(const Matrix& outputGradient){
     // biasGradients   = sum outputGradient down each column
     // inputGradient   = outputGradient × weightsᵀ  
     //T means transpose allows us to multiply
-    if (outputGradient.rowsCount() != inputCache.rowsCount() || outputGradient.colsCount() != inputCache.colsCount()){
+    if (outputGradient.rowsCount() != inputCache.rowsCount() || outputGradient.colsCount() != weightOutputSize){
         throw std::invalid_argument(
             "Output gradeitn shape does not match Dense output shape"
         );
@@ -68,4 +68,12 @@ Matrix Dense::backward(const Matrix& outputGradient){
     Matrix inputGradients = outputGradient.matrixMultiplication(transposedWeights);
 
     return inputGradients;
+}
+
+Matrix Dense::getWeightGradients() const{
+    return weightGradients;
+}
+
+Matrix Dense::getBiasGradients() const {
+    return biasGradients;
 }

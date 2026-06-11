@@ -35,8 +35,8 @@ class Dense{
     //Dense backward function uses the ouitput gradietn to find, weights and bias gradient to change weights and bias
     Matrix backward(const Matrix& outputGradient);
 
-    Matrix getWeightGradient() const;
-    Matrix getBiasGradient() const;
+    Matrix getWeightGradients() const;
+    Matrix getBiasGradients() const;
     Matrix getInputGradient() const;
 
 };
