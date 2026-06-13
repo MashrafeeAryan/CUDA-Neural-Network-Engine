@@ -16,5 +16,5 @@ add_subdirectory(src/layers)
 add_subdirectory(src/activations)
 add_subdirectory(src/loss)
 add_subdirectory(apps)
-
+add_subdirectory(benchmarks)
 add_subdirectory(tests)
