@@ -1,5 +1,5 @@
 #include <cuda_runtime.h>
-
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <random>
@@ -135,6 +135,7 @@ int main() {
 
     std::mt19937 generator(42);
     std::uniform_real_distribution<double> distribution(0.0, 1.0);
+    const int trials = 5;
 
     for (int size : sizes) {
         int rowsA = size;
@@ -157,33 +158,39 @@ int main() {
 
         cudaEvent_t start;
         cudaEvent_t stop;
+        float totalMilliseconds  = 0.0f;
+        for (int trial=0; trial<trials;trial++){
+            std::fill(C.begin(), C.end(), 0.0);
+            checkCuda(cudaEventCreate(&start), "Failed to create CUDA start event");
+            checkCuda(cudaEventCreate(&stop), "Failed to create CUDA stop event");
 
-        checkCuda(cudaEventCreate(&start), "Failed to create CUDA start event");
-        checkCuda(cudaEventCreate(&stop), "Failed to create CUDA stop event");
+            checkCuda(cudaEventRecord(start), "Failed to record CUDA start event");
 
-        checkCuda(cudaEventRecord(start), "Failed to record CUDA start event");
+            matrixMultiplicationCUDA(
+                A.data(),
+                B.data(),
+                C.data(),
+                rowsA,
+                colsA,
+                colsB
+            );
 
-        matrixMultiplicationCUDA(
-            A.data(),
-            B.data(),
-            C.data(),
-            rowsA,
-            colsA,
-            colsB
-        );
+            checkCuda(cudaEventRecord(stop), "Failed to record CUDA stop event");
+            checkCuda(cudaEventSynchronize(stop), "Failed to synchronize CUDA stop event");
 
-        checkCuda(cudaEventRecord(stop), "Failed to record CUDA stop event");
-        checkCuda(cudaEventSynchronize(stop), "Failed to synchronize CUDA stop event");
+            float milliseconds = 0.0f;
+            checkCuda(cudaEventElapsedTime(&milliseconds, start, stop), "Failed to calculate CUDA elapsed time");
+            totalMilliseconds+=milliseconds;
+    
 
-        float milliseconds = 0.0f;
-        checkCuda(cudaEventElapsedTime(&milliseconds, start, stop), "Failed to calculate CUDA elapsed time");
-
+            cudaEventDestroy(start);
+            cudaEventDestroy(stop);
+        }  
+        float averageTimeMs= totalMilliseconds/trials; 
         std::cout << size << " x " << size
-                  << " | CUDA time: " << milliseconds << " ms"
+                  << " | Average CUDA time for 5 trials: " << averageTimeMs << " ms"
+                  << " | Trials: " << trials 
                   << std::endl;
-
-        cudaEventDestroy(start);
-        cudaEventDestroy(stop);
     }
 
     return 0;
