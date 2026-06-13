@@ -72,10 +72,10 @@ int main() {
         float totalMilliseconds  = 0.0f;
         for (int trial=0; trial<trials;trial++){
             std::fill(C.begin(), C.end(), 0.0);
-            checkCuda(cudaEventCreate(&start), "Failed to create CUDA start event");
-            checkCuda(cudaEventCreate(&stop), "Failed to create CUDA stop event");
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
 
-            checkCuda(cudaEventRecord(start), "Failed to record CUDA start event");
+            cudaEventRecord(start);
 
             matrixMultiplicationCUDA(
                 A.data(),
@@ -86,11 +86,11 @@ int main() {
                 colsB
             );
 
-            checkCuda(cudaEventRecord(stop), "Failed to record CUDA stop event");
-            checkCuda(cudaEventSynchronize(stop), "Failed to synchronize CUDA stop event");
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
 
             float milliseconds = 0.0f;
-            checkCuda(cudaEventElapsedTime(&milliseconds, start, stop), "Failed to calculate CUDA elapsed time");
+            cudaEventElapsedTime(&milliseconds, start, stop);
             totalMilliseconds+=milliseconds;
     
 

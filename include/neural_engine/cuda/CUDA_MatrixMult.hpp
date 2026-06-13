@@ -8,3 +8,5 @@ void matrixMultiplicationCUDA(
     int colsA,
     int colsB
 );
+
+void checkCuda(cudaError_t result, const char* message);
