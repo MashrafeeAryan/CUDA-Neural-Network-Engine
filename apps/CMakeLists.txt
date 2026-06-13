@@ -9,6 +9,10 @@ add_executable(train_linear
     train_linear.cpp
 )
 
+add_executable(train_two_layer
+    train_two_layer.cpp
+)
+
 target_link_libraries(neural_engine_app
     PRIVATE
         matrix
@@ -29,4 +33,12 @@ target_link_libraries(train_linear
         matrix
         layers
         loss
+)
+
+target_link_libraries(train_two_layer
+    PRIVATE
+        matrix
+        layers
+        loss
+        activations
 )
