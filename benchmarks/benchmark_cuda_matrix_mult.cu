@@ -67,10 +67,11 @@ int main() {
             value = distribution(generator);
         }
 
-        cudaEvent_t start;
-        cudaEvent_t stop;
+      
         float totalMilliseconds  = 0.0f;
         for (int trial=0; trial<trials;trial++){
+            cudaEvent_t start;
+            cudaEvent_t stop;
             std::fill(C.begin(), C.end(), 0.0);
             cudaEventCreate(&start);
             cudaEventCreate(&stop);
@@ -99,7 +100,7 @@ int main() {
         }  
         float averageTimeMs= totalMilliseconds/trials; 
         std::cout << size << " x " << size
-                  << " | Average CUDA time for 5 trials: " << averageTimeMs << " ms"
+                  << " | Average CUDA time: " << averageTimeMs << " ms"
                   << " | Trials: " << trials 
                   << std::endl;
     }
