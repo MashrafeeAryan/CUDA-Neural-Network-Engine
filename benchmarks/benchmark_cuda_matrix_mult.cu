@@ -1,4 +1,4 @@
-#include "cuda/CUDA_MatrixMult.hpp"
+#include "neural_engine/cuda/CUDA_MatrixMult.hpp"
 
 #include <cuda_runtime.h>
 

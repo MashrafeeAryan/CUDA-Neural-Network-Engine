@@ -1,7 +1,7 @@
 #include <cuda_runtime.h>
 #include <cstdlib>
 #include <iostream>
-#include "cuda/CUDA_MatrixMult.hpp"
+#include "neural_engine/cuda/CUDA_MatrixMult.hpp"
 void checkCuda(cudaError_t result, const char* message) {
     if (result != cudaSuccess) {
         std::cerr << message << ": " << cudaGetErrorString(result) << std::endl;
