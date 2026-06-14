@@ -20,7 +20,9 @@ The engine currently includes:
 * Parameter updates with gradient descent
 * Training examples for simple regression, batch regression, two-layer learning, and XOR
 * CPU matrix multiplication benchmarking
-* CUDA matrix multiplication correctness test and benchmark
+* CUDA matrix multiplication correctness testing
+* Reusable CUDA matrix multiplication module
+* Matrix-based CPU vs CUDA benchmark comparison
 
 ---
 
@@ -28,12 +30,13 @@ The engine currently includes:
 
 I wanted to understand neural networks beyond just calling a framework function. This project helped me learn:
 
-* How tensors/matrices are stored in memory
+* How tensors and matrices are stored in memory
 * How forward propagation passes data through layers
 * How gradients flow backward through a network
 * How weight and bias gradients are computed
 * How matrix multiplication becomes a performance bottleneck
 * How CUDA can parallelize matrix multiplication by assigning GPU threads to output cells
+* How to connect GPU code back to a custom C++ engine abstraction
 
 The CUDA portion was added to explore how the same matrix multiplication workload performs on a GPU compared to a CPU implementation.
 
@@ -50,14 +53,20 @@ CUDA-Neural-Network-Engine/
 │   └── train_xor.cpp
 ├── benchmarks/
 │   ├── benchmark_cpu_matrix_mult.cpp
-│   └── benchmark_cuda_matmul.cu
+│   ├── benchmark_cuda_matrix_mult.cu
+│   └── benchmark_matrix_cpu_vs_cuda.cu
 ├── include/
-│   ├── activations/
-│   ├── layers/
-│   ├── loss/
-│   └── matrix/
+│   └── neural_engine/
+│       ├── activations/
+│       ├── cuda/
+│       │   └── CUDA_MatrixMult.hpp
+│       ├── layers/
+│       ├── loss/
+│       └── matrix/
 ├── src/
 │   ├── activations/
+│   ├── cuda/
+│   │   └── CUDA_MatrixMult.cu
 │   ├── layers/
 │   ├── loss/
 │   └── matrix/
@@ -83,6 +92,7 @@ Implemented operations include:
 * Transpose
 * Random initialization
 * Row-vector broadcasting for bias addition
+* Raw contiguous memory access through `rawData()` for CUDA integration
 
 The matrix multiplication implementation is intentionally written from scratch to make the CPU and CUDA performance comparison meaningful.
 
@@ -230,17 +240,17 @@ This shows that the engine can learn a non-linear function from scratch.
 
 ## CPU Matrix Multiplication Benchmark
 
-The CPU benchmark measures the custom C++ matrix multiplication implementation.
+The CPU benchmark measures the custom `Matrix::matrixMultiplication()` implementation.
 
 Average CPU timing over 5 trials:
 
 | Matrix Size | Average CPU Time |
 | ----------- | ---------------: |
-| 128 x 128   |            27 ms |
-| 256 x 256   |         247.4 ms |
-| 512 x 512   |        2419.2 ms |
+| 128 x 128   |          31.6 ms |
+| 256 x 256   |         278.6 ms |
+| 512 x 512   |          3647 ms |
 
-Matrix multiplication scales roughly with `O(n^3)` work for square matrices, so the runtime grows quickly as matrix size increases.
+Matrix multiplication scales roughly with `O(n^3)` work for square matrices, so runtime grows quickly as matrix size increases.
 
 ---
 
@@ -301,35 +311,57 @@ Observed result:
 43 50
 ```
 
-This confirmed that the CUDA memory transfer, kernel launch, indexing logic, and result copy-back were working correctly.
+This confirmed that CUDA memory transfer, kernel launch, indexing logic, and result copy-back were working correctly.
 
 ---
 
-## CUDA Benchmark
+## Matrix-Based CUDA Benchmark
 
-The CUDA benchmark was run on a Tesla T4 GPU in Google Colab.
+The CUDA benchmark uses the engine's actual `Matrix` objects instead of standalone raw arrays. The benchmark creates randomized `Matrix` inputs, exposes their contiguous memory through `rawData()`, and passes those raw pointers to the CUDA matrix multiplication function.
 
-Average CUDA timing over 5 trials:
+This connects the CUDA implementation back to the engine design:
+
+```text
+Matrix object -> rawData() -> CUDA kernel -> result written back into Matrix
+```
+
+Average CUDA timing over 5 trials on a Tesla T4 GPU in Google Colab:
 
 | Matrix Size | Average CUDA Time |
 | ----------- | ----------------: |
-| 128 x 128   |        0.33943 ms |
-| 256 x 256   |       0.873914 ms |
-| 512 x 512   |        3.76129 ms |
+| 128 x 128   |       0.469824 ms |
+| 256 x 256   |       0.962016 ms |
+| 512 x 512   |        4.02381 ms |
 
 ---
 
-## CPU vs CUDA Comparison
+## CPU vs Matrix-Based CUDA Comparison
 
-| Matrix Size | CPU Average Time | CUDA Average Time | Approx. Speedup |
+The final comparison benchmark uses the same `Matrix` inputs for both the CPU and CUDA paths.
+
+CPU path:
+
+```text
+A.matrixMultiplication(B)
+```
+
+CUDA path:
+
+```text
+matrixMultiplicationCUDA(A.rawData(), B.rawData(), C.rawData(), ...)
+```
+
+Average timing over 5 trials:
+
+| Matrix Size | Average CPU Time | Average CUDA Time | Approx. Speedup |
 | ----------- | ---------------: | ----------------: | --------------: |
-| 128 x 128   |            27 ms |        0.33943 ms |            ~80x |
-| 256 x 256   |         247.4 ms |       0.873914 ms |           ~283x |
-| 512 x 512   |        2419.2 ms |        3.76129 ms |           ~643x |
+| 128 x 128   |          31.6 ms |       0.378406 ms |          ~83.5x |
+| 256 x 256   |         278.6 ms |       0.939949 ms |         ~296.4x |
+| 512 x 512   |          3647 ms |         5.1779 ms |         ~704.3x |
 
-These results show the benefit of parallelizing matrix multiplication on the GPU.
+These results show the benefit of moving matrix multiplication from a single-threaded CPU implementation to a CUDA kernel where each GPU thread computes one output cell.
 
-The current CUDA benchmark uses raw flat arrays to isolate and test the CUDA kernel. A future version will connect the CUDA implementation directly to the custom `Matrix` class for a cleaner engine-level comparison.
+The current CUDA implementation uses a simple global-memory kernel. Future work includes shared-memory tiling and deeper integration into the neural network training path.
 
 ---
 
@@ -386,7 +418,7 @@ On Windows PowerShell:
 
 ---
 
-## Run CUDA Benchmark
+## Run Matrix-Based CUDA Benchmark
 
 The CUDA benchmark requires:
 
@@ -398,26 +430,47 @@ The CUDA benchmark requires:
 Compile with:
 
 ```bash
-nvcc benchmarks/benchmark_cuda_matmul.cu -o benchmark_cuda_matmul
+nvcc -I include src/cuda/CUDA_MatrixMult.cu src/matrix/Matrix.cpp benchmarks/benchmark_cuda_matrix_mult.cu -o benchmark_cuda_matrix_mult
 ```
 
 Run:
 
 ```bash
-./benchmark_cuda_matmul
+./benchmark_cuda_matrix_mult
 ```
 
 Example output:
 
 ```text
-Correctness test result:
-19 22
-43 50
+Matrix object CUDA benchmark:
+128 x 128 | Average CUDA time: 0.469824 ms | Trials: 5
+256 x 256 | Average CUDA time: 0.962016 ms | Trials: 5
+512 x 512 | Average CUDA time: 4.02381 ms | Trials: 5
+```
 
-CUDA matrix multiplication benchmark:
-128 x 128 | Average CUDA time: 0.33943 ms | Trials: 5
-256 x 256 | Average CUDA time: 0.873914 ms | Trials: 5
-512 x 512 | Average CUDA time: 3.76129 ms | Trials: 5
+---
+
+## Run CPU vs CUDA Benchmark
+
+Compile with:
+
+```bash
+nvcc -I include src/cuda/CUDA_MatrixMult.cu src/matrix/Matrix.cpp benchmarks/benchmark_matrix_cpu_vs_cuda.cu -o benchmark_matrix_cpu_vs_cuda
+```
+
+Run:
+
+```bash
+./benchmark_matrix_cpu_vs_cuda
+```
+
+Example output:
+
+```text
+CPU vs CUDA Matrix multiplication benchmark:
+128 x 128 | Average CPU time: 31.6 ms | Average CUDA time: 0.378406 ms | Speedup: 83.5081x | Trials: 5
+256 x 256 | Average CPU time: 278.6 ms | Average CUDA time: 0.939949 ms | Speedup: 296.399x | Trials: 5
+512 x 512 | Average CPU time: 3647 ms | Average CUDA time: 5.1779 ms | Speedup: 704.339x | Trials: 5
 ```
 
 ---
@@ -453,11 +506,11 @@ This project is still under active development.
 
 Current limitations:
 
-* CUDA matrix multiplication is currently benchmarked as a standalone `.cu` file
-* CUDA code is not yet integrated directly into the `Matrix` class
+* CUDA matrix multiplication is not yet integrated into the neural network training loop
 * Softmax backward and cross-entropy loss are not fully implemented yet
 * No MNIST or image dataset training pipeline yet
 * CUDA implementation currently uses a simple global-memory kernel, not shared-memory tiling
+* CUDA benchmarks are currently compiled manually with `nvcc` instead of through the main CMake build
 
 ---
 
@@ -465,14 +518,13 @@ Current limitations:
 
 Planned improvements:
 
-* Refactor CUDA code into `src/cuda`
-* Add a `Matrix`-based CUDA multiplication wrapper
-* Compare `Matrix::matrixMultiplication()` against CUDA multiplication directly
 * Add shared-memory tiled CUDA matrix multiplication
+* Integrate CUDA matrix multiplication into dense layer training
 * Add Softmax + Cross Entropy loss
 * Train on MNIST with a small MLP
 * Add model saving/loading
 * Add more benchmarks and profiling results
+* Add CUDA support to the CMake build system
 
 ---
 
@@ -490,6 +542,7 @@ Through this project, I practiced:
 * Host-device memory transfer
 * GPU thread/block/grid indexing
 * Performance comparison between CPU and GPU workloads
+* Connecting low-level CUDA kernels back to a custom C++ engine abstraction
 
 ---
 
@@ -506,6 +559,6 @@ Through this project, I practiced:
 
 ## Status
 
-This project currently supports training small neural networks from scratch and benchmarking CPU vs CUDA matrix multiplication.
+This project currently supports training small neural networks from scratch and benchmarking CPU vs CUDA matrix multiplication using the engine's custom `Matrix` class.
 
-The next major step is to refactor CUDA matrix multiplication into reusable engine code and connect it directly to the custom `Matrix` class.
+The next major step is to optimize CUDA matrix multiplication with shared-memory tiling and integrate CUDA acceleration into the neural network training path.
