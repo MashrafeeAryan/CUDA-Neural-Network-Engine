@@ -1,213 +1,189 @@
 #include "neural_engine/matrix/Matrix.hpp"
+
 #include <random>
 #include <stdexcept>
 
-// Constructor: function inside class that runs automatically 
-// when we create an object
-// We need constructor to make sure our variables don't hold random data'
-    //It helps initialize the variables
-    //Helps allocate memory
-
-
-// I am using member initializer lists
-// Instead of creating rows and cols first, then assign r and c into them,
-// create rows with r and c immediately
-// Initialized data vector with 0.0
+// Creates a rows x cols matrix and initializes every element to 0.0.
+// Matrix values are stored in one flat vector using row-major order.
 Matrix::Matrix(int r, int c)
-    :rows(r), cols(c), data(r * c, 0.0){
+    : rows(r), cols(c), data(r * c, 0.0) {
 }
 
-// So this is how our vector will look like
-// Matrix(2,3) = [0,0,0,0,0,0]
-// Actual Matrix:
-//        [ 0,0,0
-//          0,0,0]
-// Now to access each element of vector we use row
-// How the index works
-    // A(1,2) You want to access first row second element
-    // index = element_searching_row * number of columns + element_searching_column
-    // index = 1 * 3 + 2 = 5
-
-//& is used as a reference operator
-//double& gives direct access to memory slot that stores the retuned element        
-
-// This is used for write/edit version
-double& Matrix::operator()(int r, int c){
+// Writable element access.
+// Converts a 2D matrix position (r, c) into a 1D vector index:
+// index = r * cols + c
+double& Matrix::operator()(int r, int c) {
     if (r < 0 || r >= rows || c < 0 || c >= cols) {
         throw std::out_of_range("Matrix index out of range");   
     }
-    return data[ r * cols + c];
+
+    return data[r * cols + c];
 }
 
-//Read only version of operator
-double Matrix::operator()(int r, int c) const{
+// Read-only element access for const Matrix objects.
+// This allows safe access without modifying the matrix.
+double Matrix::operator()(int r, int c) const {
     if (r < 0 || r >= rows || c < 0 || c >= cols) {
         throw std::out_of_range("Matrix index out of range");   
     }
-    return data[ r * cols + c];
+
+    return data[r * cols + c];
 }
-//Returns the number of rows a matrix has
-int Matrix::rowsCount() const{
+
+// Returns the number of rows in the matrix.
+int Matrix::rowsCount() const {
     return rows;
 }
 
-//return the number of columns a matrix has
-int Matrix::colsCount() const{
+// Returns the number of columns in the matrix.
+int Matrix::colsCount() const {
     return cols;
 }
 
-//Define Matrix Addition
-//It is usually called :
-// Matrix A(2, 2);
-// Matrix B(2, 2);
-// A(0, 0) = 1;
-// A(0, 1) = 2;
-// A(1, 0) = 3;
-// A(1, 1) = 4;
-
-// B(0, 0) = 5;
-// B(0, 1) = 6;
-// B(1, 0) = 7;
-// B(1, 1) = 8;
-// A.matrixAddition(B)
-//For addition the rows and columsn should be exact of both matrixs
+// Performs element-wise matrix addition.
+// Both matrices must have the same shape.
 Matrix Matrix::matrixAddition(const Matrix& secondMatrix) const {
-    //Since the matrixAddition is part of current class, we can access provoate values like rows
-    //without using getter function.
-    //It simply means: (this)(rows)
-    if (rows != secondMatrix.rowsCount() || cols!= secondMatrix.colsCount()){
-        throw std::invalid_argument("Matrix dimensions must match for addition");    }
-    //Create an empty matrix filled with zeroes
+    if (rows != secondMatrix.rowsCount() || cols != secondMatrix.colsCount()) {
+        throw std::invalid_argument("Matrix dimensions must match for addition");
+    }
+
     Matrix results(rows, cols); 
     
-    // This loop access each row and column
-    // (*this) allows to access the current object
-    for (int r=0; r< rows; r++){
-        for (int c=0; c< cols; c++){
-            results(r, c) = (*this)(r,c) + secondMatrix(r, c);
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            results(r, c) = (*this)(r, c) + secondMatrix(r, c);
         }
     }
 
     return results;
 }
 
-
-//Define MatrixSubtraction
-//It is pretty similar to matrix addition
-Matrix Matrix::matrixSubtraction(const Matrix& secondMatrix) const{
-    if (rows != secondMatrix.rowsCount() || cols != secondMatrix.colsCount()){
+// Performs element-wise matrix subtraction.
+// Both matrices must have the same shape.
+Matrix Matrix::matrixSubtraction(const Matrix& secondMatrix) const {
+    if (rows != secondMatrix.rowsCount() || cols != secondMatrix.colsCount()) {
         throw std::invalid_argument("Matrix dimensions must match for subtraction");
-    };
-    //defines an empty matrix with rows and columns
+    }
+
     Matrix results(rows, cols);
-    for (int r =0; r < rows; r++){
-        for (int c=0; c< cols; c++){
-            results(r, c) = (*this)(r,c) - secondMatrix(r, c);
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            results(r, c) = (*this)(r, c) - secondMatrix(r, c);
         }
     }
+
     return results;
 }
 
-//Define MultiplyByScalar function
-Matrix Matrix::multiplyByScalar(const double scalarValue) const{
-    //No need for error messages because we are using only one matrix here
+// Multiplies every matrix element by scalarValue.
+Matrix Matrix::multiplyByScalar(const double scalarValue) const {
     Matrix results(rows, cols);
-    for (int r = 0; r < rows; r++){
-        for (int c = 0; c< cols; c++){
-            results(r, c) = (*this)(r,c) * scalarValue;
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            results(r, c) = (*this)(r, c) * scalarValue;
         }
     }
+
     return results;
 }
 
-//Define Matrix Multiplication
+// Performs standard matrix multiplication.
+// Shape rule:
+// If this matrix is rows x cols, secondMatrix must be cols x secondMatrix.colsCount().
+// The result shape is rows x secondMatrix.colsCount().
 Matrix Matrix::matrixMultiplication(const Matrix& secondMatrix) const {
-    //Set the condition for matrix multiplicaiton where columns of first matrix must equal rows of second matrix
-    if (cols != secondMatrix.rowsCount()){
-        throw std::invalid_argument("Matrix dimensions must match for multiplication. Number of columsn of first amtrix should equal number of rows of second matrix");
+    if (cols != secondMatrix.rowsCount()) {
+        throw std::invalid_argument(
+            "Matrix dimensions must match for multiplication. Number of columns of first matrix should equal number of rows of second matrix"
+        );
     }
 
-    //The resulting matrix shape should be rows of first matrix * columns of second matrix
     Matrix result(rows, secondMatrix.colsCount());
 
-    // rows is for first matrix
-    //The first two loops actually help us figure out which spot in the new result box should this go
-    for (int r = 0; r < rows; r++){
-        for (int c = 0; c< secondMatrix.colsCount(); c++){
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < secondMatrix.colsCount(); c++) {
             double sum = 0;
-            for (int k =0; k < cols; k++){
-                //For the first matrix, the rows will be same column number will move
-                //For second matrix, row will move and column number will be same
-                sum += (*this)(r,k) * secondMatrix(k,c);
+
+            // Dot product between row r of this matrix and column c of secondMatrix.
+            for (int k = 0; k < cols; k++) {
+                sum += (*this)(r, k) * secondMatrix(k, c);
             }
+
             result(r, c) = sum;
         }
-
     }
-    return result;
 
+    return result;
 }
 
-//Define tranpose function
+// Returns the transpose of the matrix.
+// Element at (r, c) becomes element at (c, r).
 Matrix Matrix::transpose() const {
-    //The goal is to flips rows and columns of the matrices
-    // A(r,c) = results(c,r)
-    //Define results matrix
     Matrix results(cols, rows);
 
-    for (int r=0; r < rows; r++){
-        for (int c=0; c< cols; c++){
-            results(c, r) = (*this)(r,c);
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            results(c, r) = (*this)(r, c);
         }
     }
+
     return results;
 }
 
-//Define matrixRandomization
-Matrix Matrix::matrixRandomization(int rows, int cols, double minValue, double maxValue){
+// Creates a matrix with random values between minValue and maxValue.
+// This is useful for neural network weight initialization, where starting
+// every weight at the same value can prevent neurons from learning different patterns.
+Matrix Matrix::matrixRandomization(int rows, int cols, double minValue, double maxValue) {
     if (minValue > maxValue) {
         throw std::invalid_argument("minValue cannot be greater than maxValue");
     }
 
     Matrix results(rows, cols);
 
-    //Gets random seed from computer
     std::random_device rd;
-
-    //Uses the random seed to generate many random numbers
-    //mt19937 is random number eingien in C++
     std::mt19937 generator(rd());
-
-    //It uses the generator to produce random values between minValue and maxValue
     std::uniform_real_distribution<double> distribution(minValue, maxValue);
 
-    for (int r=0; r< rows; r++){
-        for (int c=0; c<cols; c++){
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
             results(r, c) = distribution(generator);
         }
     }
+
     return results;
- 
 }
 
-//Bias broadcasting where you add the bias to every row
-Matrix Matrix::addRowVector(const Matrix& biasVector) const{
-
-    //There should be an error if A column and bias column doesn't match
-    //And the bias must have 1 row.
-    if (cols != biasVector.colsCount() || biasVector.rowsCount() != 1){
+// Adds a row vector to every row of this matrix.
+// Used for bias broadcasting in dense layers.
+// Expected bias shape: 1 x number_of_columns.
+Matrix Matrix::addRowVector(const Matrix& biasVector) const {
+    if (cols != biasVector.colsCount() || biasVector.rowsCount() != 1) {
         throw std::invalid_argument(
             "Bias vector must have shape 1 x number_of_columns"
         );
     }
 
-    //It will be used like A.addRowVector(bias)
-    //so we have access to the rows and columns of Matrix A
     Matrix result(rows, cols);
-    for (int r = 0; r < rows; r++){
-        for (int c = 0; c < cols; c++){
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
             result(r, c) = (*this)(r, c) + biasVector(0, c);
         } 
     }
+
     return result;
+}
+
+// Provides read-only access to the matrix's contiguous raw memory.
+// This is useful for CUDA and other performance code that requires raw pointers.
+const double* Matrix::rawData() const {
+    return data.data();
+}
+
+// Provides writable access to the matrix's contiguous raw memory.
+// This allows CUDA or other performance code to write results directly into a Matrix.
+double* Matrix::rawData() {
+    return data.data();
 }
