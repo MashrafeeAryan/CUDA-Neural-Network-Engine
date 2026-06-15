@@ -12,7 +12,7 @@ if(ENABLE_CUDA)
         benchmark_matrix_cuda_mult.cu
     )
 
-    target_link_libraries(benchmark_cuda_matrix_mult
+    target_link_libraries(benchmark_matrix_cuda_mult
         PRIVATE
             cuda_matrix_mult
             matrix
