@@ -8,8 +8,8 @@ target_link_libraries(benchmark_cpu_matrix_mult
 )
 
 if(ENABLE_CUDA)
-    add_executable(benchmark_cuda_matrix_mult
-        benchmark_cuda_matrix_mult.cu
+    add_executable(benchmark_matrix_cuda_mult
+        benchmark_matrix_cuda_mult.cu
     )
 
     target_link_libraries(benchmark_cuda_matrix_mult
